@@ -5,14 +5,12 @@
 #include <array>
 using namespace std;
 
-// Simple student record
 struct Student {
     int id;
     string name;
     string course;
 };
 
-// Simple book record
 struct Book {
     string code;
     string name;
@@ -20,7 +18,7 @@ struct Book {
     int studentid;
 };
 
-// Grade record
+
 struct Grade {
     int studentid;
     array<int,5> marks;
@@ -28,20 +26,18 @@ struct Grade {
     char grade;
 };
 
-// Attendance record
+
 struct Attendance {
     int studentid;
     int total;
     int present;
 };
 
-// Data storage
 vector<Student> allstudents;
 vector<Book> allbooks;
 vector<Grade> allgrades;
 vector<Attendance> allattendance;
 
-// Helper: split a CSV line by comma
 vector<string> splitCSV(const string &line) {
     vector<string> tokens;
     string token;
@@ -56,7 +52,6 @@ vector<string> splitCSV(const string &line) {
     return tokens;
 }
 
-// Student functions
 void showstudents() {
     cout << "\n=== STUDENT LIST ===\n";
     for(size_t i=0; i<allstudents.size(); i++) {
@@ -82,7 +77,6 @@ void addstudent() {
     cout << "Student added!\n";
 }
 
-// Book functions
 void showbooks() {
     cout << "\n=== BOOK LIST ===\n";
     for(size_t i=0; i<allbooks.size(); i++) {
@@ -149,7 +143,6 @@ void returnbook() {
     cout << "Book not found!\n";
 }
 
-// Grades and attendance
 void showgrades() {
     cout << "\n=== GRADES ===\n";
     for(auto &g : allgrades) {
@@ -211,21 +204,17 @@ void enterattendance() {
     cout << "Attendance: " << percent << "%\n";
 }
 
-// File operations: use separate files for clarity
 void savedata() {
-    // Students
     ofstream sf("students.txt");
     for(auto &s : allstudents) {
         sf << s.id << "," << s.name << "," << s.course << "\n";
     }
     sf.close();
-    // Books
     ofstream bf("books.txt");
     for(auto &b : allbooks) {
         bf << b.code << "," << b.name << "," << (b.available ? 1 : 0) << "," << b.studentid << "\n";
     }
     bf.close();
-    // Grades
     ofstream gf("grades.txt");
     for(auto &g : allgrades) {
         gf << g.studentid;
@@ -233,7 +222,6 @@ void savedata() {
         gf << "\n";
     }
     gf.close();
-    // Attendance
     ofstream af("attendance.txt");
     for(auto &a : allattendance) {
         af << a.studentid << "," << a.total << "," << a.present << "\n";
@@ -242,7 +230,6 @@ void savedata() {
 }
 
 void loaddata() {
-    // Students
     allstudents.clear();
     ifstream sf("students.txt");
     string line;
@@ -259,7 +246,6 @@ void loaddata() {
         }
         sf.close();
     }
-    // Books
     allbooks.clear();
     ifstream bf("books.txt");
     if(bf) {
@@ -276,7 +262,6 @@ void loaddata() {
         }
         bf.close();
     }
-    // Grades
     allgrades.clear();
     ifstream gf("grades.txt");
     if(gf) {
@@ -301,7 +286,6 @@ void loaddata() {
         }
         gf.close();
     }
-    // Attendance
     allattendance.clear();
     ifstream af("attendance.txt");
     if(af) {
@@ -319,7 +303,6 @@ void loaddata() {
     }
 }
 
-// Menu functions
 void studentmenu() {
     int choice;
     do {
@@ -380,7 +363,6 @@ void attendancemenu() {
     } while(choice != 0);
 }
 
-// Main function
 int main() {
     loaddata();
     int choice;
@@ -404,3 +386,4 @@ int main() {
     } while(choice != 0);
     return 0;
 }
+
