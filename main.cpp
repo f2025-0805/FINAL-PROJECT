@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <array>
+#include <sstream>
 using namespace std;
 
 struct Student {
@@ -18,14 +19,12 @@ struct Book {
     int studentid;
 };
 
-
 struct Grade {
     int studentid;
     array<int,5> marks;
     float avg;
     char grade;
 };
-
 
 struct Attendance {
     int studentid;
@@ -38,20 +37,6 @@ vector<Book> allbooks;
 vector<Grade> allgrades;
 vector<Attendance> allattendance;
 
-vector<string> splitCSV(const string &line) {
-    vector<string> tokens;
-    string token;
-    for (size_t i = 0; i <= line.size(); ++i) {
-        if (i == line.size() || line[i] == ',') {
-            tokens.push_back(token);
-            token.clear();
-        } else {
-            token.push_back(line[i]);
-        }
-    }
-    return tokens;
-}
-
 void showstudents() {
     cout << "\n=== STUDENT LIST ===\n";
     for(size_t i=0; i<allstudents.size(); i++) {
@@ -61,7 +46,7 @@ void showstudents() {
     }
 }
 
-void savedata(); // forward
+void savedata();
 
 void addstudent() {
     Student s;
@@ -210,11 +195,13 @@ void savedata() {
         sf << s.id << "," << s.name << "," << s.course << "\n";
     }
     sf.close();
+    
     ofstream bf("books.txt");
     for(auto &b : allbooks) {
         bf << b.code << "," << b.name << "," << (b.available ? 1 : 0) << "," << b.studentid << "\n";
     }
     bf.close();
+    
     ofstream gf("grades.txt");
     for(auto &g : allgrades) {
         gf << g.studentid;
@@ -222,6 +209,7 @@ void savedata() {
         gf << "\n";
     }
     gf.close();
+    
     ofstream af("attendance.txt");
     for(auto &a : allattendance) {
         af << a.studentid << "," << a.total << "," << a.present << "\n";
@@ -236,44 +224,56 @@ void loaddata() {
     if(sf) {
         while(getline(sf, line)) {
             if(line.empty()) continue;
-            auto tok = splitCSV(line);
-            if(tok.size() < 3) continue;
+            stringstream ss(line);
+            string id_str, name, course;
+            getline(ss, id_str, ',');
+            getline(ss, name, ',');
+            getline(ss, course);
             Student s;
-            try { s.id = stoi(tok[0]); } catch(...) { continue; }
-            s.name = tok[1];
-            s.course = tok[2];
+            try { s.id = stoi(id_str); } catch(...) { continue; }
+            s.name = name;
+            s.course = course;
             allstudents.push_back(s);
         }
         sf.close();
     }
+    
     allbooks.clear();
     ifstream bf("books.txt");
     if(bf) {
         while(getline(bf, line)) {
             if(line.empty()) continue;
-            auto tok = splitCSV(line);
-            if(tok.size() < 4) continue;
+            stringstream ss(line);
+            string code, name, avail_str, sid_str;
+            getline(ss, code, ',');
+            getline(ss, name, ',');
+            getline(ss, avail_str, ',');
+            getline(ss, sid_str);
             Book b;
-            b.code = tok[0];
-            b.name = tok[1];
-            b.available = (tok[2] == "1" || tok[2] == "true");
-            try { b.studentid = stoi(tok[3]); } catch(...) { b.studentid = 0; }
+            b.code = code;
+            b.name = name;
+            b.available = (avail_str == "1" || avail_str == "true");
+            try { b.studentid = stoi(sid_str); } catch(...) { b.studentid = 0; }
             allbooks.push_back(b);
         }
         bf.close();
     }
+    
     allgrades.clear();
     ifstream gf("grades.txt");
     if(gf) {
         while(getline(gf, line)) {
             if(line.empty()) continue;
-            auto tok = splitCSV(line);
-            if(tok.size() < 6) continue; // id + 5 marks
+            stringstream ss(line);
+            string sid_str;
+            getline(ss, sid_str, ',');
             Grade g;
-            try { g.studentid = stoi(tok[0]); } catch(...) { continue; }
+            try { g.studentid = stoi(sid_str); } catch(...) { continue; }
             int total = 0;
-            for(int i=0;i<5;i++) {
-                try { g.marks[i] = stoi(tok[i+1]); } catch(...) { g.marks[i] = 0; }
+            for(int i=0; i<5; i++) {
+                string mark_str;
+                if(!getline(ss, mark_str, ',')) break;
+                try { g.marks[i] = stoi(mark_str); } catch(...) { g.marks[i] = 0; }
                 total += g.marks[i];
             }
             g.avg = total/5.0f;
@@ -286,17 +286,21 @@ void loaddata() {
         }
         gf.close();
     }
+    
     allattendance.clear();
     ifstream af("attendance.txt");
     if(af) {
         while(getline(af, line)) {
             if(line.empty()) continue;
-            auto tok = splitCSV(line);
-            if(tok.size() < 3) continue;
+            stringstream ss(line);
+            string sid_str, total_str, present_str;
+            getline(ss, sid_str, ',');
+            getline(ss, total_str, ',');
+            getline(ss, present_str);
             Attendance a;
-            try { a.studentid = stoi(tok[0]); } catch(...) { continue; }
-            try { a.total = stoi(tok[1]); } catch(...) { a.total = 0; }
-            try { a.present = stoi(tok[2]); } catch(...) { a.present = 0; }
+            try { a.studentid = stoi(sid_str); } catch(...) { continue; }
+            try { a.total = stoi(total_str); } catch(...) { a.total = 0; }
+            try { a.present = stoi(present_str); } catch(...) { a.present = 0; }
             allattendance.push_back(a);
         }
         af.close();
